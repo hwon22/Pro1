@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#FDF183"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="413dp"
+        android:layout_height="363dp"
+        android:layout_marginTop="120dp"
+        android:gravity="center"
+        android:lineSpacingExtra="0dp"
+        android:text="반갑습니다!\n오늘은 \n어디가세요?"
+        android:textSize="38dp"
+        android:textColor="#000000"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/newBtn"
+        android:layout_width="212dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="288dp"
+        android:background="#FFFFFF"
+        android:text="새로운 장소"
+        android:textColor="#000000"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:onClick="newBtnClick"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textView" />
+
+    <Button
+        android:id="@+id/oldBtn"
+        android:layout_width="212dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="10dp"
+        android:background="#FFFFFF"
+        android:text="방문한 장소"
+        android:textSize="20dp"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/newBtn" />
+</androidx.constraintlayout.widget.ConstraintLayout>
