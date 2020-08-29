@@ -13,15 +13,20 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String listSql="create table tb_list ("+
+        String listSql="create table tb_checklist ("+
                 "_id Integer primary key autoincrement,"+
-                "placename not null," +
-                "placetime)";
+                "checkplace not null,"+
+                "checkaddress not null," +
+                "checklatitude not null,"+
+                "checklongitude not null,"+
+                "checktime not null,"+
+                "checkdistance)";
         String placeSql="create table tb_newlist ("+
                 "_id Integer primary key autoincrement,"+
                 "newaddress not null,"+
                 "newlatitude not null,"+
                 "newlongitude not null,"+
+                "newDate,"+
                 "newtime,"+
                 "newtel)";
         db.execSQL(listSql);
@@ -31,7 +36,7 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if(newVersion==DATABASE_VERSION){
-            db.execSQL("drop table tb_list");
+            db.execSQL("drop table tb_checklist");
             db.execSQL("drop table tb_newlist");
             onCreate(db);
         }

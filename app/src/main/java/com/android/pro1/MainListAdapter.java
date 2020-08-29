@@ -40,12 +40,14 @@ public class MainListAdapter extends ArrayAdapter<ListVO> {
             convertView.setTag(wrapper);
         }
         MainListWrapper wrapper = (MainListWrapper)convertView.getTag(); //태그획득
-        TextView nameView = wrapper.nameView; //view 얻어오기
+        TextView addView = wrapper.addView; //view 얻어오기
+        TextView addPlusView=wrapper.addPlusView;
         TextView dateView = wrapper.dateView;
 
         final ListVO vo = datas.get(position);
-        nameView.setText(vo.placename);
-        dateView.setText(vo.placetime);
+        addView.setText(vo.checkplace);
+        addPlusView.setText(vo.checkaddress);
+        dateView.setText(vo.checktime);
         return convertView;
     }
 }

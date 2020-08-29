@@ -5,6 +5,12 @@
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
-        android:title="기록보기"
+        android:title="기록 보기"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_change"
+        android:orderInCategory="100"
+        android:title="목적지 변경"
+        app:showAsAction="never"/>
+
 </menu>

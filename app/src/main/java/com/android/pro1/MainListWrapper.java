@@ -4,10 +4,12 @@ import android.view.View;
 import android.widget.TextView;
 
 public class MainListWrapper {
-    public TextView nameView;
+    public TextView addView;
+    public TextView addPlusView;
     public TextView dateView;
     public MainListWrapper(View root){
-        nameView=(TextView)root.findViewById(R.id.main_item_name);
-        dateView=(TextView)root.findViewById(R.id.main_item_date);
+        addView=(TextView)root.findViewById(R.id.main_item_address);
+        addPlusView=(TextView)root.findViewById(R.id.main_item_plus_address);
+        dateView=(TextView)root.findViewById(R.id.main_item_time);
     }
 }

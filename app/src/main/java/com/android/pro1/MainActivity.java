@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import android.util.Log;
 import android.view.View;
 
 import android.view.Menu;
@@ -37,27 +40,31 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int REQUEST_CODE_PERMISSIONS = 1000;
     private GoogleMap mMap;
+    private Geocoder geocoder; //지오코딩
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
     long mNow=System.currentTimeMillis();
-    Date mDate=new Date(mNow);
-    SimpleDateFormat mFormat = new SimpleDateFormat("HH시 mm분");
-    String formatDate = mFormat.format(mDate);
-
+    Date mTime=new Date(mNow);
+    SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
+    String formatDate = mFormat.format(mTime);
     int id=0;
     String newaddress="";
     String newlatitude ="";
     String newlongitude ="";
     String newtime="";
     String newtel="";
+    int markNum=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,54 +100,67 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onSuccess(Location location) {
 
                 if(location!=null){
-                    LatLng myLocation = new LatLng(location.getLatitude(),location.getLongitude());
-                    mMap.addMarker(new MarkerOptions()
-                            .position(myLocation)
-                            .title("현재 위치"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(myLocation));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
-                    onNewPlace();
+                    //위치정보
+                    final LatLng myLocation = new LatLng(location.getLatitude(),location.getLongitude());
+                    final String latitudeString = String.valueOf(myLocation.latitude);
+                    final String longitudeString =String.valueOf(myLocation.longitude);
+                    Log.e("test",latitudeString);
+                    Log.e("test",longitudeString);
+                    List<Address> list =null;
+                    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                    try{
+                        double d1=Double.parseDouble(latitudeString);
+                        double d2 =Double.parseDouble(longitudeString);
+                        list=geocoder.getFromLocation(d1,d2,10);
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        Log.e("test","주소변환에서 오류");
+                    }
+                    String newaddress =list.get(0).toString();
+                    final String address=newaddress.substring(newaddress.indexOf("국")+1,newaddress.lastIndexOf("\""));
+
+                    //사용자에게 장소이름 물어보기
+                    AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                    alert.setTitle("새로운 위치 도착!");
+                    alert.setMessage("여기는 어딘가요?");
+                    final EditText place = new EditText(MainActivity.this);
+                    alert.setView(place);
+                    alert.setPositiveButton("체크인", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            String placeName = place.getText().toString();
+                            Log.e("test",placeName);
+                            onMark(myLocation,address,placeName,latitudeString,longitudeString);
+                        }
+                    });
+                    alert.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    });
+                    alert.show();
                 }
             }
         });
     }
-
-    public void markUp(String a){
-        String name = a;
-        if(name==null || name.equals("")){
-            Toast t=Toast.makeText(this,"실패- 장소가 입력되지 않았습니다.",Toast.LENGTH_SHORT);
-            t.show();
-        }
-        else{
-            DBHelper helper = new DBHelper(this);
-            SQLiteDatabase db = helper.getWritableDatabase();
-            db.execSQL("insert into tb_list (placename,date) values (?,?)",
-                    new String[] {name,formatDate});
-            db.close();
-            Toast t=Toast.makeText(this,"성공- 장소가 저장되었습니다.",Toast.LENGTH_SHORT);
-            t.show();
-        }
-    }
-
-    public void onNewPlace(){
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("새로운 위치 도착!");
-        alert.setMessage("여기는 어딘가요?");
-        final EditText place = new EditText(this);
-        alert.setView(place);
-        alert.setPositiveButton("체크인", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String placename = place.getText().toString(); markUp(placename);
-            }
-        });
-        alert.setNegativeButton("취소", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-        alert.show();
+    public void onMark(LatLng myLocation,String address,String placeName,String latitudeString,String longitudeString){
+        //지도에 새로운 위치의 마커를 생성함
+        markNum+=1;
+        mMap.addMarker(new MarkerOptions()
+                .position(myLocation)
+                .title("체크"+markNum+": "+placeName)
+                .snippet(address)).showInfoWindow();
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(myLocation));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
+        //디비에 값 입력 하기
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.execSQL("insert into tb_checklist (checkplace,checkaddress,checklatitude,checklongitude,checktime) values (?,?,?,?,?)",
+                new String[] {placeName,address,latitudeString,longitudeString,formatDate});
+        db.close();
+        Toast t=Toast.makeText(this,"성공- 장소가 저장되었습니다.",Toast.LENGTH_SHORT);
+        t.show();
     }
 
     @Override
@@ -169,10 +189,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor cursor = db.rawQuery("Select * from tb_newlist order by _id",null);
 
-
-
         while(cursor.moveToNext()){
-
             id = cursor.getInt(0);
             newaddress=cursor.getString(1);
             newlatitude=cursor.getString(2);
@@ -183,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         db.close();
 
         LatLng seoul = new LatLng(Double.parseDouble(newlatitude), Double.parseDouble(newlongitude));
-        mMap.addMarker(new MarkerOptions().position(seoul).title(newaddress).snippet("클릭하여 전화하기")).showInfoWindow();
+        mMap.addMarker(new MarkerOptions().position(seoul).title("목적지: "+newaddress).snippet("클릭하여 전화하기")).showInfoWindow();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(seoul));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(seoul,16));
       //  mMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
